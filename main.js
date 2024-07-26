@@ -20,6 +20,7 @@ let currentExpression = "";
 // Function to update displays
 function updateDisplays(value, isOperator = false) {
   if (!isOperator) {
+    clearOperatorSelection(); // Clear operator selection when a new number is entered
     if (operatorSelected || displayValue === "0") {
       displayValue = value === "." ? "0." : value;
       operatorSelected = false;
@@ -46,6 +47,17 @@ function updateDisplays(value, isOperator = false) {
   }
 }
 
+// Function to handle operator selected visual cue
+function setActiveOperator(op) {
+  operatorButtons.forEach((button) => {
+    if (button.textContent === op) {
+      button.classList.add("active");
+    } else {
+      button.classList.remove("active");
+    }
+  });
+}
+
 // Event listeners for number buttons
 numberButtons.forEach((button) => {
   button.addEventListener("click", function () {
@@ -58,6 +70,7 @@ numberButtons.forEach((button) => {
     } else {
       updateDisplays(value);
     }
+    setActiveOperator(null); // This will remove the active class from all operators
   });
 });
 
@@ -94,19 +107,12 @@ function calculateResult() {
     secondNumber = null;
     operator = null;
     operatorSelected = false;
-    clearOperatorSelection();
   }
 }
 
 // Function to handle operators
 function handleOperator(op) {
-  clearOperatorSelection();
-  const operatorButton = document.querySelector(`.operator[textContent="${op}"]`);
-  if (operatorButton) {
-    operatorButton.classList.add("selected-operator");
-  } else {
-    console.warn(`No operator button found for "${op}"`);
-  }
+  setActiveOperator(op);
 
   if (firstNumber === null) {
     firstNumber = parseFloat(displayValue);
@@ -133,6 +139,7 @@ equalsButton.addEventListener("click", function () {
     calculateResult();
   }
   currentExpression = "";
+  setActiveOperator(null);
 });
 
 // Event listener for clear button
@@ -145,7 +152,7 @@ clearButton.addEventListener("click", function () {
   currentExpression = "";
   mainDisplay.textContent = displayValue;
   secondaryDisplay.textContent = currentExpression;
-  clearOperatorSelection();
+  setActiveOperator(null);
 });
 
 // Event listener for toggle sign button

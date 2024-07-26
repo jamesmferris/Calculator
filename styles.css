@@ -64,6 +64,10 @@ button:active {
   background-color: rgb(63, 63, 63);
 }
 
+.operator.active {
+  background-color: rgb(63, 63, 63);
+}
+
 .utility {
   background-color: #a0a0a0;
   color: black;
