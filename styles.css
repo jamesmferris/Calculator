@@ -5,30 +5,131 @@
   --shadow-color: #a3b1c6;
   --highlight-color: #ffffff;
   --operator-color: #ff9500;
+  --toggle-bg-light: #e0e5ec;
+  --toggle-bg-dark: #2c3e50;
+  --dark-mode-switch-bg: #1a2937; /* Darker blue for the switch background */
+  --dark-mode-slider: #6c849b; /* Brighter blue for the slider */
 }
 
+/* Dark mode variables */
+.dark-mode {
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+  --button-color: #2c3e50;
+  --shadow-color: #000000;
+  --highlight-color: #6c849b;
+  --operator-color: #e67e22;
+}
+
+#calculator.dark-mode,
 body {
   background-color: var(--bg-color);
+}
+
+#theme-toggle-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  margin-top: 40px;
+  transition: color 0.3s ease;
+}
+
+#theme-toggle-container span {
+  margin: 0 6px;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 73px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--button-color);
+  transition: 0.4s;
+  box-shadow: inset 2px 2px 5px var(--shadow-color), inset -2px -2px 5px var(--highlight-color);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--highlight-color);
+  transition: 0.4s;
+}
+
+/* Dark mode slider */
+.dark-mode .slider {
+  background-color: var(--dark-mode-switch-bg);
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2), inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .slider:before {
+  background-color: var(--dark-mode-slider);
+}
+
+input:checked + .slider {
+  background-color: var(--toggle-bg-dark);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
   margin: 0;
   font-family: Arial, sans-serif;
+  transition: background-color 0.3s ease;
 }
 
 #calculator {
   background-color: var(--bg-color);
   border-radius: 30px;
-  box-shadow: 15px 15px 30px var(--shadow-color), -15px -15px 30px var(--highlight-color);
+  box-shadow: 10px 10px 20px var(--shadow-color), -10px -10px 20px var(--highlight-color);
   padding: 40px;
-  width: 400px; /* Increased from 300px */
+  width: 400px;
+  transition: all 0.3s ease;
 }
 
 #display-container {
   background-color: var(--bg-color);
   border-radius: 15px;
-  box-shadow: inset 7px 7px 15px var(--shadow-color), inset -7px -7px 15px var(--highlight-color);
+  box-shadow: inset 5px 5px 10px var(--shadow-color), inset -5px -5px 10px var(--highlight-color);
   margin-bottom: 30px;
   padding: 30px;
   text-align: right;
@@ -56,20 +157,22 @@ button {
   background-color: var(--button-color);
   border: none;
   border-radius: 15px;
-  box-shadow: 7px 7px 15px var(--shadow-color), -7px -7px 15px var(--highlight-color);
+  box-shadow: 5px 5px 10px var(--shadow-color), -5px -5px 10px var(--highlight-color);
   color: var(--text-color);
   cursor: pointer;
-  font-size: 1.5em; /* Increased from 1.2em */
-  padding: 25px; /* Increased from 15px */
-  transition: all 0.2s ease;
+  font-size: 1.5em;
+  padding: 25px;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  box-shadow: 3px 3px 7px var(--shadow-color), -3px -3px 7px var(--highlight-color);
+  box-shadow: 2px 2px 5px var(--shadow-color), -2px -2px 5px var(--highlight-color);
 }
 
-button:active {
-  box-shadow: inset 3px 3px 7px var(--shadow-color), inset -3px -3px 7px var(--highlight-color);
+button:active,
+.operator.active {
+  box-shadow: inset 2px 2px 5px var(--shadow-color), inset -2px -2px 5px var(--highlight-color);
+  animation: button-press 0.2s ease;
 }
 
 .operator,
@@ -100,18 +203,10 @@ button:active {
   }
 }
 
-button:active {
-  animation: button-press 0.2s ease;
-}
-
-.operator.active {
-  animation: button-press 0.2s ease;
-}
-
 #display-container {
   transition: all 0.3s ease;
 }
 
 #display-container:hover {
-  box-shadow: inset 10px 10px 20px var(--shadow-color), inset -10px -10px 20px var(--highlight-color);
+  box-shadow: inset 7px 7px 14px var(--shadow-color), inset -7px -7px 14px var(--highlight-color);
 }

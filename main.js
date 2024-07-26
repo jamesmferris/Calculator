@@ -8,6 +8,7 @@ let clearButton = document.getElementById("clear");
 let equalsButton = document.getElementById("equals");
 let toggleSignButton = document.getElementById("toggle-sign");
 let percentageButton = document.getElementById("percentage");
+const themeToggle = document.getElementById("theme-toggle");
 
 let operatorSelected = false;
 
@@ -16,6 +17,36 @@ let firstNumber = null;
 let secondNumber = null;
 let operator = null;
 let currentExpression = "";
+
+// Basic math functions
+function add(a, b) {
+  return a + b;
+}
+
+function subtract(a, b) {
+  return a - b;
+}
+
+function multiply(a, b) {
+  return a * b;
+}
+
+function divide(a, b) {
+  if (b === 0) {
+    return "NaN";
+  }
+  return a / b;
+}
+
+// Function to operate based on the operator and the two numbers
+function operate(operator, a, b) {
+  if (operator in operations) {
+    let result = operations[operator](a, b);
+    return formatResult(result);
+  } else {
+    return null;
+  }
+}
 
 // Function to update displays
 function updateDisplays(value, isOperator = false) {
@@ -57,29 +88,6 @@ function setActiveOperator(op) {
     }
   });
 }
-
-// Event listeners for number buttons
-numberButtons.forEach((button) => {
-  button.addEventListener("click", function () {
-    const value = this.textContent;
-    if (value === "." && displayValue.includes(".")) {
-      return; // Don't add another decimal point
-    }
-    if (value === "." && displayValue === "0") {
-      updateDisplays("0.");
-    } else {
-      updateDisplays(value);
-    }
-    setActiveOperator(null); // This will remove the active class from all operators
-  });
-});
-
-// Event listeners for operator buttons
-operatorButtons.forEach((button) => {
-  button.addEventListener("click", function () {
-    handleOperator(this.textContent);
-  });
-});
 
 // Function to reset calculator
 function clearCalculator() {
@@ -133,6 +141,79 @@ function handleOperator(op) {
   secondaryDisplay.textContent = currentExpression;
 }
 
+// Function to handle percentage operation
+function handlePercentage() {
+  let currentValue = parseFloat(displayValue);
+  if (!isNaN(currentValue)) {
+    if (operator !== null && firstNumber !== null) {
+      // If we're in the middle of an operation, calculate percentage of the first number
+      currentValue = (firstNumber * currentValue) / 100;
+    } else {
+      // Otherwise, just convert the current value to a percentage
+      currentValue = currentValue / 100;
+    }
+    displayValue = formatResult(currentValue);
+    mainDisplay.textContent = displayValue;
+
+    // Update the current expression
+    if (currentExpression.includes("=") || currentExpression === "") {
+      currentExpression = displayValue;
+    } else {
+      let parts = currentExpression.split(" ");
+      parts[parts.length - 1] = displayValue;
+      currentExpression = parts.join(" ");
+    }
+    secondaryDisplay.textContent = currentExpression;
+
+    // Reset the operation if we're not in the middle of one
+    if (operator === null) {
+      firstNumber = null;
+    }
+  }
+}
+
+// Function to clear operator selection
+function clearOperatorSelection() {
+  operatorButtons.forEach((button) => button.classList.remove("selected-operator"));
+}
+
+// Function to round the result and convert it to scientific notation if necessary
+function formatResult(number) {
+  if (typeof number !== "number") {
+    return number;
+  }
+  if (number === 0) {
+    return "0";
+  }
+  const maxDigits = 9;
+  let formattedNumber = number.toString();
+
+  if (Math.abs(number) >= 1e9 || (Math.abs(number) < 1e-3 && Math.abs(number) > 0)) {
+    // Use scientific notation for very large or very small non-zero numbers
+    return number.toExponential(maxDigits - 6).slice(0, maxDigits); // 6 for "e+xxx" part
+  } else {
+    // For all other numbers
+    if (formattedNumber.includes(".")) {
+      const [intPart, decPart] = formattedNumber.split(".");
+      const availableDecimalPlaces = Math.max(0, maxDigits - intPart.length - 1);
+      return parseFloat(number.toFixed(availableDecimalPlaces)).toString();
+    } else if (formattedNumber.length > maxDigits) {
+      return formattedNumber.slice(0, maxDigits);
+    }
+    return formattedNumber;
+  }
+}
+
+// Function to handle theme changes
+function toggleTheme() {
+  document.body.classList.toggle("dark-mode");
+  document.getElementById("calculator").classList.toggle("dark-mode");
+  document.querySelector(".slider").classList.toggle("dark-mode");
+}
+
+// Event listener for theme toggle
+themeToggle.addEventListener("change", toggleTheme);
+
 // Event listener for equals button
 equalsButton.addEventListener("click", function () {
   if (operator !== null) {
@@ -173,93 +254,33 @@ toggleSignButton.addEventListener("click", function () {
   }
 });
 
-// Function to handle percentage operation
-function handlePercentage() {
-  let currentValue = parseFloat(displayValue);
-  if (!isNaN(currentValue)) {
-    if (operator !== null && firstNumber !== null) {
-      // If we're in the middle of an operation, calculate percentage of the first number
-      currentValue = (firstNumber * currentValue) / 100;
+// Event listeners for number buttons
+numberButtons.forEach((button) => {
+  button.addEventListener("click", function () {
+    const value = this.textContent;
+    if (value === "." && displayValue.includes(".")) {
+      return; // Don't add another decimal point
+    }
+    if (value === "." && displayValue === "0") {
+      updateDisplays("0.");
     } else {
-      // Otherwise, just convert the current value to a percentage
-      currentValue = currentValue / 100;
+      updateDisplays(value);
     }
-    displayValue = formatResult(currentValue);
-    mainDisplay.textContent = displayValue;
+    setActiveOperator(null); // This will remove the active class from all operators
+  });
+});
 
-    // Update the current expression
-    if (currentExpression.includes("=") || currentExpression === "") {
-      currentExpression = displayValue;
-    } else {
-      let parts = currentExpression.split(" ");
-      parts[parts.length - 1] = displayValue;
-      currentExpression = parts.join(" ");
-    }
-    secondaryDisplay.textContent = currentExpression;
-
-    // Reset the operation if we're not in the middle of one
-    if (operator === null) {
-      firstNumber = null;
-    }
-  }
-}
+// Event listeners for operator buttons
+operatorButtons.forEach((button) => {
+  button.addEventListener("click", function () {
+    handleOperator(this.textContent);
+  });
+});
 
 // Event listener for percentage button
 percentageButton.addEventListener("click", function () {
   handlePercentage();
 });
-
-// Function to clear operator selection
-function clearOperatorSelection() {
-  operatorButtons.forEach((button) => button.classList.remove("selected-operator"));
-}
-
-// Function to round the result and convert it to scientific notation if necessary
-function formatResult(number) {
-  if (typeof number !== "number") {
-    return number;
-  }
-  if (number === 0) {
-    return "0";
-  }
-  const maxDigits = 9;
-  let formattedNumber = number.toString();
-
-  if (Math.abs(number) >= 1e9 || (Math.abs(number) < 1e-3 && Math.abs(number) > 0)) {
-    // Use scientific notation for very large or very small non-zero numbers
-    return number.toExponential(maxDigits - 6).slice(0, maxDigits); // 6 for "e+xxx" part
-  } else {
-    // For all other numbers
-    if (formattedNumber.includes(".")) {
-      const [intPart, decPart] = formattedNumber.split(".");
-      const availableDecimalPlaces = Math.max(0, maxDigits - intPart.length - 1);
-      return parseFloat(number.toFixed(availableDecimalPlaces)).toString();
-    } else if (formattedNumber.length > maxDigits) {
-      return formattedNumber.slice(0, maxDigits);
-    }
-    return formattedNumber;
-  }
-}
-
-// Basic math functions
-function add(a, b) {
-  return a + b;
-}
-
-function subtract(a, b) {
-  return a - b;
-}
-
-function multiply(a, b) {
-  return a * b;
-}
-
-function divide(a, b) {
-  if (b === 0) {
-    return "NaN";
-  }
-  return a / b;
-}
 
 // Object mapping operators to functions
 const operations = {
@@ -269,12 +290,6 @@ const operations = {
   "/": divide,
 };
 
-// Function to operate based on the operator and the two numbers
-function operate(operator, a, b) {
-  if (operator in operations) {
-    let result = operations[operator](a, b);
-    return formatResult(result);
-  } else {
-    return null;
-  }
-}
+// Set initial slider color
+const slider = document.querySelector(".slider");
+slider.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--button-color").trim();
